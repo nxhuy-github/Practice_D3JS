@@ -1,34 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <script src="../d3.min.js"></script>
+    <script src="../../d3.min.js"></script>
 </head>
 <body>
     <div id="vizcontainer">
       <svg style="width: 500px; height: 500px; border: 1px lightgray solid" />
     </div>
     <script>
-      d3.select("svg")
-        .append("line")
-        .attr("x1", 20)
-        .attr("y1", 20)
-        .attr("x2", 400)
-        .attr("y2", 400)
-        .style("stroke", "black")
-        .style("stroke-width", "2px")
-
-      d3.select('svg')
-        .append('text')
-        .attr('x', 20)
-        .attr('y', 20)
-        .text('Bonjour')
-
       d3.select('svg')
         .append('circle')
         .attr('r', 20)
         .attr('cx', 20)
         .attr('cy', 20)
         .style('fill', 'red')
+      
+      d3.select('svg')
+        .append('text')
+        .attr('id', 'a')
+        .attr('x', 20)
+        .attr('y', 20)
+        .style('opacity', 0)
+        .text('Bonjour à tous')
 
       d3.select('svg')
         .append('circle')
@@ -39,10 +32,16 @@
 
       d3.select('svg')
         .append('text')
+        .attr('id', 'b')
         .attr('x', 400)
         .attr('y', 400)
-        .text('à tous')
+        .style('opacity', 0)
+        .text('Salut')
+
+      d3.select('#a').transition().delay(1000).style('opacity', 1)
+      d3.select('#b').transition().delay(3000).style('opacity', .75)
       
+      d3.selectAll('circle').transition().duration(5000).attr('cy', 200)
     </script>
 </body>
 </html>
