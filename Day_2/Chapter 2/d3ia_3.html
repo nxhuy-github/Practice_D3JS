@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.2.8/d3.min.js" type="text/JavaScript"></script>
+</head>
+<body>
+    <div id="vizcontainer">
+      <svg style="width: 500px; height: 500px; border: 1px lightgray solid" />
+    </div>
+    <script>
+      d3.csv('./cities.csv', function(data) {
+        dataViz(data)
+      })
+
+      function dataViz(data) {
+        let _max = d3.max(data, function(e) { return parseInt(e.population) })
+        let yScale = d3.scaleLinear().domain([0, _max]).range([0, 460])
+
+        d3.select('svg')
+          .selectAll('rect')
+          .data(data)
+          .enter()
+          .append('rect')
+          .attr('width', '50px')
+          .attr('height', function(d) { return yScale(parseInt(d.population)) })
+          .attr('x', function(d, i) { return i*60 })
+          .attr('y', function(d, i) { return 480 - yScale(parseInt(d.population))})
+          .style('fill', 'red')
+          .style('stroke', 'blue')
+          .style('stroke-width', '1px')
+          .style('opacity', .25)
+      }
+    </script>
+</body>
+</html>
