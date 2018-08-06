@@ -28,14 +28,10 @@ function overallTeamViz(data) {
     .transition()
     .duration(500)
     .attr('r', 20)
-    .style('fill', 'pink')
-    .style('stroke', 'black')
-    .style('stroke-width', '1px')
 
   teamG.append('text')
     .attr('y', 30)
     .style('text-anchor', 'middle')
-    .style('font-size', '10px')
     .text(function(d) { return d.team })
 
   let dataKeys = d3.keys(data[0]).filter(function(e) {
@@ -65,7 +61,7 @@ function overallTeamViz(data) {
 
   function highlightRegion2(d) {
     let teamColor = d3.rgb('pink')
-    d3.select(this).select('text').classed('active', true).attr('y', 10)
+    d3.select(this).select('text').classed('highlight', true).attr('y', 10)
     d3.selectAll('g.overallG')
       .select('circle')
       .style('fill', function(p) {

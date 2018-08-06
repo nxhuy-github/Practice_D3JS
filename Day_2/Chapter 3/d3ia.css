@@ -2,7 +2,7 @@ text {
   font-size: 10px
 }
 
-g > text.active {
+g > text.highlight {
   font-size: 30px
 }
 
