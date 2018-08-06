@@ -49,12 +49,14 @@ function overallTeamViz(data) {
   function buttonClick(datapoint) {
     let maxVal = d3.max(data, function(d) { return parseFloat(d[datapoint]) })
     let radiusScale = d3.scaleLinear().domain([0, maxVal]).range([2,20])
+    let colorRamp = d3.scaleLinear().domain([0, maxVal]).range(['yellow', 'blue'])
 
     d3.selectAll('g.overallG')
       .select('circle')
       .transition()
       .duration(1000)
       .attr('r', function(d) { return radiusScale(d[datapoint]) })
+      .style('fill', function(d) { return colorRamp(d[datapoint]) })
   }
 
   teamG.on('mouseover', highlightRegion2)
