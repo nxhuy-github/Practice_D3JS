@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.2.8/d3.min.js" type="text/JavaScript"></script>
+</head>
+<body>
+    <div id="vizcontainer">
+      <svg style="width: 500px; height: 500px; border: 1px lightgray solid" />
+    </div>
+    <script>
+      d3.json('./tweets.json', function(data) {
+        dataViz(data.tweets)
+      })
+
+      function dataViz(data) {
+        data.forEach(e => {
+          e.impact = e.favorites.length + e.retweets.length
+          e.tweetTime = new Date(e.timestamp)  
+        })
+
+        let maxImpact = d3.max(data, function(d) { return d.impact })
+        let startEnd = d3.extent(data, function(d) { return d.tweetTime })
+
+        let yScale = d3.scaleLinear().domain([0, maxImpact]).range([0, 460])
+        let timeRamp = d3.scaleTime().domain(startEnd).range([20, 480])
+        let radiusScale = d3.scaleLinear().domain([0, maxImpact]).range([1, 20])
+        
+        /** 
+          Don’t want to rely on array position as your binding key
+          => specify YOUR BINDING KEY
+        **/
+        d3.select('svg')
+          .selectAll('circle')
+          .data(data, function(d) {
+            return JSON.stringify(d) 
+          })
+          .enter()
+          .append('circle')
+          .attr('r', function(d) {
+            return radiusScale(d.impact)
+          })
+          .attr('cx', function(d) { return timeRamp(d.tweetTime) })
+          .attr('cy', function(d) { return 480 - yScale(d.impact) })
+          .style('fill', '#990000')
+          .style('stroke', 'black')
+          .style('stroke-width', '1px')
+
+        let filteredData = data.filter(function(e) {
+          return e.impact > 0
+        })
+
+        /**
+          In this code, if you ignore the second setting (in data() function)
+          the exit() and remove() will use the ARRAY POSITION to match data and remove
+          element
+          => the result is false
+        **/
+        d3.selectAll('circle')
+          .data(filteredData, function(d) { return JSON.stringify(d) })
+          .exit()
+          .remove()
+
+      }
+    </script>
+</body>
+</html>
