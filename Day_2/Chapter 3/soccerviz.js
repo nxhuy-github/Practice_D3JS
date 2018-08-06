@@ -49,7 +49,9 @@ function overallTeamViz(data) {
   function buttonClick(datapoint) {
     let maxVal = d3.max(data, function(d) { return parseFloat(d[datapoint]) })
     let radiusScale = d3.scaleLinear().domain([0, maxVal]).range([2,20])
-    let colorRamp = d3.scaleLinear().domain([0, maxVal]).range(['yellow', 'blue'])
+    let colorRamp = d3.scaleLinear()
+                    .interpolate(d3.interpolateHsl)
+                    .domain([0, maxVal]).range(['yellow', 'blue'])
 
     d3.selectAll('g.overallG')
       .select('circle')
