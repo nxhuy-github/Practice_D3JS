@@ -50,6 +50,8 @@ function overallTeamViz(data) {
 
     d3.selectAll('g.overallG')
       .select('circle')
+      .transition()
+      .duration(1000)
       .attr('r', function(d) { return radiusScale(d[datapoint]) })
   }
 
