@@ -21,6 +21,12 @@ function overallTeamViz(data) {
   let teamG = d3.selectAll('g.overallG')
 
   teamG.append('circle')
+    .transition()
+    .delay(function(d, i) { return i*100 })
+    .duration(500)
+    .attr('r', 40)
+    .transition()
+    .duration(500)
     .attr('r', 20)
     .style('fill', 'pink')
     .style('stroke', 'black')
