@@ -61,7 +61,20 @@ function overallTeamViz(data) {
       .attr('r', function(d) { return radiusScale(d[datapoint]) })
   }
 
-  teamG.on('mouseover', highlightRegion)
+  teamG.on('mouseover', highlightRegion2)
+
+  function highlightRegion2(d) {
+    let teamColor = d3.rgb('pink')
+    d3.select(this).select('text').classed('active', true).attr('y', 10)
+    d3.selectAll('g.overallG')
+      .select('circle')
+      .style('fill', function(p) {
+        return p.region === d.region ?
+          teamColor.darker(.75) :
+          teamColor.brighter(.5)
+      })
+    this.parentElement.appendChild(this);
+  }
 
   function highlightRegion(d) {
     d3.selectAll('g.overallG')
@@ -71,9 +84,14 @@ function overallTeamViz(data) {
       })
   }
   
-  teamG.on("mouseout", function() {
-    d3.selectAll("g.overallG").select("circle").style("fill", "pink");
-  })
+  teamG.on("mouseout", unHighlight)
+
+  function unHighlight(d) {
+    d3.selectAll('g.overallG').select('circle').attr('class', '')
+    d3.selectAll('g.overallG').select('text').classed('highlight', false).attr('y', 30)
+  }
+
+  teamG.select("text").style("pointer-events","none")
 
 }
 
