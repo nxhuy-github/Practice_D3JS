@@ -12,13 +12,13 @@ function overallTeamViz(data) {
     .selectAll('g')
     .data(data)
     .enter()
-    .append(g)
+    .append('g')
     .attr('class', 'overallG')
     .attr('transform', function(d, i) {
       return 'translate(' + (i*50) + ', 0)'
     })
 
-  let teamG = d3.selectAll('g.overallG')
+  var teamG = d3.selectAll('g.overallG')
 
   teamG.append('circle')
     .attr('r', 20)
