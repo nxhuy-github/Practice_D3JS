@@ -18,7 +18,7 @@ function overallTeamViz(data) {
       return 'translate(' + (i*50) + ', 0)'
     })
 
-  var teamG = d3.selectAll('g.overallG')
+  let teamG = d3.selectAll('g.overallG')
 
   teamG.append('circle')
     .attr('r', 20)
@@ -52,5 +52,20 @@ function overallTeamViz(data) {
       .select('circle')
       .attr('r', function(d) { return radiusScale(d[datapoint]) })
   }
+
+  teamG.on('mouseover', highlightRegion)
+
+  function highlightRegion(d) {
+    d3.selectAll('g.overallG')
+      .select('circle')
+      .style('fill', function(p) {
+        return p.region === d.region ? 'red' : 'gray'
+      })
+  }
+  
+  teamG.on("mouseout", function() {
+    d3.selectAll("g.overallG").select("circle").style("fill", "pink");
+  })
+
 }
 
