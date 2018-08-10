@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Page Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.2.8/d3.min.js" type="text/JavaScript"></script>
+</head>
+<body>
+    <div id="viz">
+      <svg style="width:800px;height:800px;" ></svg>
+    </div>
+  <script>
+    d3.csv('movies.csv', function(data) {
+      let xScale = d3.scaleLinear().domain([1, 10.5]).range([20, 480])
+      let yScale = d3.scaleLinear().domain([0, 100]).range([480, 20])
+
+      let xAxis = d3.axisBottom(xScale).tickValues([1,2,3,4,5,6,7,8,9,10]).tickSize(-480)
+      d3.select('svg').append('g').attr('id', 'xAxis').attr('transform', 'translate(0,750)').call(xAxis)
+
+      let yAxis = d3.axisRight(yScale).ticks(10).tickSize(-480)
+      d3.select('svg').append('g').attr('id', 'yAxis').attr('transform', 'translate(480, 0)').call(yAxis)
+
+      let fillScale = d3.scaleLinear().domain([0, 5]).range(['lightgray', 'black'])
+      let n = 0
+
+      function alternatingSimpleStacking(data, attr, topBottom) {
+        let newHeight = 0
+        let skip = true
+        for (x in data) {
+          if (x !== 'day') {
+            if (x === 'movie1' || skip === false) {
+              newHeight += parseInt(data[x])
+              if (x === attr) {
+                break
+              }
+              if (skip === false) {
+                skip = true 
+              } else {
+                n%2 === 0 ? skip = false : skip = true
+              }
+            } else {
+              skip = false
+            }
+          }
+        }
+        if (topBottom === 'bottom') {
+          newHeight = - newHeight
+        }
+        if (n > 1 && n%2 === 1 && topBottom === 'bottom') {
+          newHeight = 0
+        }
+        if (n > 1 && n%2 === 0 && topBottom === 'top') {
+          newHeight = 0
+        }
+        return newHeight
+      }
+      
+      for (x in data[0]) {
+        if (x !== 'day') {
+          let movieArea = d3.area()
+                            .x(function(d) { return xScale(d.day) })
+                            .y0(function(d) { return yScale(alternatingSimpleStacking(d, x, 'top')) })
+                            .y1(function(d) { return yScale(alternatingSimpleStacking(d, x, 'bottom'))} )
+                            .curve(d3.curveBasis)
+          d3.select('svg')
+            .append('path')
+            .style('id', x + 'Area')
+            .attr('d', movieArea(data))
+            .attr('fill', fillScale(n))
+            .attr('stroke', 'none')
+            .attr('stroke-width', 2)
+            .style('opacity', .5)
+          
+          n++
+        }
+      }
+
+    })
+  </script>
+</body>
+</html>
