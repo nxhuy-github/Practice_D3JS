@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>D3 in Action Examples</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        line {
+        shape-rendering: crispEdges;
+        stroke: #000;
+        }
+        path.domain {
+        fill: none;
+        stroke: black;
+        }
+    </style>
+</head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js" type="text/javascript"></script>
+<body onload="createSoccerViz()">
+  <div id="viz">
+    <svg style="width:600px;height:600px;border:1px lightgray solid;"/>
+  </div>
+</body>
+  <script>
+    function createSoccerViz() {
+      d3.csv('movies.csv', function(d) {
+        stackViz(d)
+      })
+
+      function stackViz(data) {
+        let expData = data
+        let stackData = []
+
+        let xScale = d3.scale.linear().domain([0, 10.5]).range([0, 500])
+        let yScale = d3.scale.linear().domain([0, 100]).range([500, 0])
+
+        let xAxis = d3.svg.axis().scale(xScale).orient('bottom').tickValues([1,2,3,4,5,6,7,8,9,10]).tickSize(-480)
+        let yAxis = d3.svg.axis().scale(yScale).orient('right').tickSize(-480)
+        d3.select('svg').append('g').attr('id', 'xAxis').attr('transform', 'translate(0, 500)').call(xAxis)
+        d3.select('svg').append('g').attr('id', 'yAxis').attr('transform', 'translate(500, 0)').call(yAxis)
+
+        let movieColors = d3.scale.category10(['movie1', 'movie2', 'movie3', 'movie4', 'movie5', 'movie6'])
+
+        let stackArea = d3.svg.area()
+                              .interpolate('basis')
+                              .x(function(d) { return xScale(d.x) })
+                              .y0(function(d) { return yScale(d.y0) })
+                              .y1(function(d) { return yScale(d.y0 + d.y) })
+
+        let stackLayout = d3.layout.stack()
+                                   .values(function(d) { return d.values })
+
+        let heightScale = d3.scale.linear().domain([0, 100]).range([0, 500])
+        
+        for (x in data[0]) {
+          // console.log(x)
+          if (x !== 'day') {
+            let newMovieObject = {name: x, values:[]}
+            for (y in data) {
+              // console.log(y)
+              newMovieObject.values.push({
+                x: parseInt(data[y]['day']),
+                y: parseInt(data[y][x])
+              })
+            }
+          // console.log(newMovieObject)
+          stackData.push(newMovieObject)
+          }
+        }
+
+        // console.log(stackData)
+        console.log(stackLayout(stackData))
+
+        d3.select('svg')
+          .selectAll('g.bar')
+          .data(stackLayout(stackData))
+          .enter()
+          .append('g')
+          .attr('class', 'bar')
+          .each(function(d) {
+            d3.select(this)
+              .selectAll('rect')
+              .data(d.values)
+              .enter()
+              .append('rect')
+              .attr('x', function(p) { return xScale(p.x) - 15 })
+              .attr('y', function(p) { return yScale(p.y + p.y0) })
+              .attr('height', function(p) { return heightScale(p.y) })
+              .attr('width', 30)
+              .style('fill', movieColors(d.name))
+          })
+      }
+    }
+  </script>
+</html>
