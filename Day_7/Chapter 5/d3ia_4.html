@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>D3 in Action Examples</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">\
+</head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js" type="text/javascript"></script>\
+<body onload="createSoccerViz()">
+  <div id="viz">
+    <svg style="width:600px;height:600px;border:1px lightgray solid;"/>
+  </div>
+  <div id="controls" />
+</body>
+  <script>
+    function createSoccerViz() {
+      d3.json('tweets.json', function(d) {
+        treeViz(d.tweets)
+      })
+
+      function treeViz(data) {
+        let treeZoom = d3.behavior.zoom()
+        treeZoom.on('zoom', zoomed)
+        d3.select('svg').call(treeZoom)
+
+        function zoomed() {
+          let zoomTranslate = treeZoom.translate()
+          console.log(zoomTranslate)
+          d3.select('g#treeG')
+            .attr('transform', 'translate('+zoomTranslate[0]+','+zoomTranslate[1]+')')
+        }
+        
+        let nestedData = d3.nest()
+                           .key(function(d) { return d.user })
+                           .entries(data)
+        // console.log(nestedData)
+        
+        let deepScale = d3.scale.category10([0,1,2])
+        let packableTweets = {'id': 'All Tweets', values: nestedData}
+        let treeChart = d3.layout.tree()
+        treeChart.size([200,200])
+                .children(function(d) { return d.values })
+        
+        // console.log(treeChart(packableTweets))
+        let linkGenerator = d3.svg.diagonal
+                                  .radial()
+                                  .projection(function(d) { return [d.y, d.x / 180 * Math.PI] })
+        // console.log(linkGenerator)
+
+        d3.select('svg')
+          .append('g')
+          .attr('id', 'treeG')
+          .selectAll('g')
+          .data(treeChart(packableTweets))
+          .enter()
+          .append('g')
+          .attr('class', 'node')
+          .attr('transform', function(d) { return 'rotate(' + (d.x - 90) + ')translate(' + d.y + ')'})
+
+        d3.selectAll('g.node')
+          .append('circle')
+          .attr('r', 10)
+          .style('fill', function(d) { return deepScale(d.depth) })
+          .style('stroke', 'white')
+          .style('stroke-width', '2px')
+
+        d3.selectAll('g.node')
+          .append('text')
+          .text(function(d) { return d.id || d.key || d.content })
+
+        d3.select('#treeG')
+          .selectAll('path')
+          .data(treeChart.links(treeChart(packableTweets)))
+          .enter()
+          .insert('path', 'g')
+          .attr('d', linkGenerator)
+          .style('fill', 'none')
+          .style('stroke', 'black')
+          .style('stroke-width', '2px')
+      }
+    }
+  </script>
+</html>
