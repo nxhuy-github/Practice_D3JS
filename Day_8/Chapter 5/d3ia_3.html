@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>D3 in Action Examples</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        line {
+        shape-rendering: crispEdges;
+        stroke: #000;
+        }
+        path.domain {
+        fill: none;
+        stroke: black;
+        }
+    </style>
+</head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js" type="text/javascript"></script>
+<script src="sankey.js" type="text/JavaScript"></script>
+<body onload="createSoccerViz()">
+  <div id="viz">
+    <svg style="width:600px;height:600px;border:1px lightgray solid;"/>
+  </div>
+</body>
+  <script>
+    function createSoccerViz() {
+      d3.json('sitestats.json', function(d) {
+        // console.log(d.nodes)
+        sankeyViz(d)
+      })
+
+      function sankeyViz(data) {
+        let sankey = d3.sankey()
+                    .nodeWidth(1)
+                    .nodePadding(200)
+                    .size([460, 460])
+                    .nodes(data.nodes)
+                    .links(data.links)
+                    .layout(200)
+        // Modify data.nodes & data.links
+        // console.log(data.nodes)
+        let intensityRamp = d3.scale.linear()
+                            .domain([0, d3.max(data.links, function(d) {
+                              return d.value
+                            })]).range(['black', 'red'])
+        
+        d3.select('svg')
+          .append('g')
+          .attr('transform', 'translate(20,20)')
+          .attr('id', 'sankeyG')
+        
+        d3.select('#sankeyG')
+          .selectAll('.link')
+          .data(data.links)
+          .enter()
+          .append('path')
+          .attr('class', 'link')
+          .attr('d', sankey.link())
+          .style('stroke-width', function(d) { return d.dy })
+          .style('stroke-opacity', .5)
+          .style('fill', 'none')
+          .style('stroke', function(d) { return intensityRamp(d.value) })
+          .sort(function(a, b) { return b.dy - a.dy })
+          .on('mouseover', function() { d3.select(this).style('stroke-opacity', .8) })
+          .on('mouseout', function() { d3.select(this).style('stroke-opacity', .5) })
+
+        d3.select('#sankeyG')
+          .selectAll('.node')
+          .data(data.nodes)
+          .enter()
+          .append('g')
+          .attr('class', 'node')
+          .attr('transform', function(d) {
+              return 'translate(' + d.x + ',' + d.y + ')' 
+          })
+        
+        d3.selectAll('.node')
+          .append('circle')
+          .attr('height', function(d) { return d.dy })
+          .attr('r', function(d) { return d.dy / 2 })
+          .attr('cy', function(d) { return d.dy / 2 })
+          .style('fill', 'pink')
+          .style('stroke', 'gray')
+
+        d3.selectAll('.node')
+          .append('text')
+          .attr('x', 0)
+          .attr('y', function(d) { return d.dy / 2 })
+          .attr('text-anchor', 'middle')
+          .text(function(d) { return d.name })
+        
+        let numLayouts = 1
+        d3.select('svg')
+          .on('click', moreLayouts)
+        
+        sankey.layout(numLayouts)
+        function moreLayouts() {
+          numLayouts += 20
+          sankey.layout(numLayouts)
+          d3.selectAll('.link')
+            .transition()
+            .duration(500)
+            .attr('d', sankey.link())
+
+          // d3.selectAll('.node')
+          //   .transition()
+          //   .duration(500)
+          //   .attr('transform', function(d) {
+          //     return 'translate(', + d.x + ',', + d.y + ')'
+          //   })
+        }
+      }
+    }
+  </script>
+</html>
