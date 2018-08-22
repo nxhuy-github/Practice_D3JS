@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>D3 in Action Examples</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        line {
+        shape-rendering: crispEdges;
+        stroke: #000;
+        }
+        path.domain {
+        fill: none;
+        stroke: black;
+        }
+    </style>
+</head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js" type="text/javascript"></script>
+<link rel="stylesheet" href="ch7.css">
+<body onload="geoMap()">
+  <div id="viz">
+    <svg style="width:600px;height:600px;border:1px lightgray solid;"></svg>
+  </div>
+  <div id="controls">
+
+  </div>
+</body>
+  <script>
+    function geoMap() {
+      d3.json('world.geojson', createMap)
+
+      function createMap(countries) {
+        // console.log(countries)
+        let aProjection = d3.geo.mercator()
+        let geoPath = d3.geo.path().projection(aProjection)
+        d3.select('svg')
+          .selectAll('path')
+          .data(countries.features)
+          .enter()
+          .append('path')
+          .attr('d', geoPath)
+          .attr('class', 'countries')
+          
+      }
+    }
+  </script>
+</html>
