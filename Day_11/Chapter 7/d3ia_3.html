@@ -28,16 +28,16 @@
 </body>
   <script>
     function geoMap() {
-      let promiseWrapper = function(d) {
+      let promiseWrapper = function(filename) {
         return new Promise(function(resolve) {
-          if (d.includes('geojson')) {
-            d3.json(d, function(p) {
-              resolve(p)
+          if (filename.includes('geojson')) {
+            d3.json(filename, function(data) {
+              resolve(data)
             })
           }
           else {
-            d3.csv(d, function(p) {
-              resolve(p)
+            d3.csv(filename, function(data) {
+              resolve(data)
             })
           }
         })
