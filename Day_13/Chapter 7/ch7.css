@@ -1,0 +1,30 @@
+path.countries {
+  stroke-width: 1;
+  stroke: black;
+  opacity: .5;
+  fill: red;
+}
+circle.cities {
+  stroke-width: 1;
+  stroke: black;
+  fill: white;
+}
+circle.centroid {
+  fill: red;
+  pointer-events: none;
+}
+rect.bbox {
+  fill: none;
+  stroke-dasharray: 5 5;
+  stroke: black;
+  stroke-width: 2;
+  pointer-events: none;
+}
+path.graticule {
+  fill: none;
+  stroke-width: 1;
+  stroke: black;
+}
+path.graticule.outline {
+stroke: black;
+}
