@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>D3 in Action Examples</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        line {
+        shape-rendering: crispEdges;
+        stroke: #000;
+        }
+        path.domain {
+        fill: none;
+        stroke: black;
+        }
+    </style>
+</head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js" type="text/javascript"></script>
+<link rel="stylesheet" href="ch7.css">
+<script src="colorbrewer.js" type="text/javascript"></script>
+<script src="//d3js.org/d3.geo.projection.v0.min.js"></script>
+<script src="//d3js.org/topojson.v1.min.js"></script>
+<script src="tile.js"></script>
+<body onload="geoMap()">
+  <div id="viz">
+    <svg style="width:600px;height:600px;border:1px lightgray solid;"></svg>
+  </div>
+  <div id="controls">
+
+  </div>
+</body>
+  <script>
+    function geoMap() {
+      let promiseWrapper = function(filename) {
+        return new Promise(function(resolve) {
+          if (filename.includes('topojson')) {
+            d3.json(filename, function(data) {
+              resolve(data)
+            })
+          }
+          else {
+            d3.csv(filename, function(data) {
+              resolve(data)
+            })
+          }
+        })
+      }
+      Promise.all([
+        promiseWrapper('world.topojson'),
+        promiseWrapper('cities.csv')
+      ])
+      .then(function(data) {
+        createMap(data[0], data[1])
+      })
+
+      function createMap(topo, cities) {
+        let width = 500
+        let height = 500
+        
+        d3.select('svg')
+          .append('g')
+          .attr('id', 'tiles')
+        
+        let tile = d3.geo.tile().size([width, height])
+        let projection = d3.geo.mercator().scale(120).translate([width / 2, height / 2 ])
+        let center = projection([12, 42])
+        let path = d3.geo.path().projection(projection)
+        let zoom = d3.behavior.zoom()
+                    .scale(projection.scale() * 2 * Math.PI)
+                    .translate([width - center[0], height - center[1]])
+                    .on('zoom', redraw)
+        d3.select('svg').call(zoom)
+        redraw()
+
+        function redraw() {
+          let tiles = tile.scale(zoom.scale()).translate(zoom.translate())()
+          let image = d3.select('#tiles')
+                        .attr('transform', 'scale(' + tiles.scale + ') translate(' + tiles.translate + ')')
+                        .selectAll('image')
+                        .data(tiles, function (d) { return d })
+          
+          image.exit().remove()
+          image.enter().append('image')
+            .attr("xlink:href", function(d) { 
+                return "http://" + ["a", "b", "c", "d"][Math.random() * 4 | 0] + ".tiles.mapbox.com/v3/elijahmeeks.map-zm593ocx/" + d[2] + "/" + d[0] + "/" + d[1] + ".png" 
+            })
+            .attr('width', 1)
+            .attr('height', 1)
+            .attr('x', function (d) { return d[0] })
+            .attr('y', function (d) { return d[1] })
+        }
+      }
+    }
+  </script>
+</html>
