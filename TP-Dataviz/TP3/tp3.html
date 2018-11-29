@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body {
+  font: 10px sans-serif;
+}
+
+.axis path, .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.dot {
+  stroke: #000;
+  stroke-width: .5px;
+}
+
+.tooltip {
+	position: absolute;
+	width: 200px;
+	height: 28px;
+	pointer-events: none;
+}
+
+.chart {
+  display: inline-block;
+  height: 240px;
+  width: 240px;
+  margin: 30px;
+}
+</style>
+<body>
+  <script src="http://d3js.org/d3.v4.min.js"></script>
+  <script>
+    let cellw = 240
+    let cellh = 240
+    let margin = {top: 20, right: 20, bottom: 20, left: 30}
+
+    d3.select("body")
+      .append("div")
+      .attr("id", "charts")
+      .attr("width", "1000px")
+      .attr("height", "1000px")
+
+    d3.csv('./iris.csv', function(error, data) {
+      if (error) throw error
+      visualization(data)
+    })
+
+    function visualization(data) {
+      let keys = d3.keys(data[0]).filter(function(d) { return d !== "species" })
+      let n = keys.length
+
+      for(let i = 0; i < n; i++) {
+          for(let j = 0; j < n; j++) {
+              let _id = keys[i] + "-" + keys[j]
+              d3.select("#charts")
+                .append("div")
+                .attr("id", _id)
+                .attr("class", "chart")
+            
+              let el = d3.select("#" + _id)
+              let svg = el.append("svg")
+                        .attr("width", cellw + margin.left + margin.right)
+                        .attr("height", cellh + margin.bottom + margin.top)
+                      .append("g")
+                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+              scatterPlot(svg, data, cellw, cellh, keys[j], keys[i])
+          }
+      }
+    }
+
+    function scatterPlot(svg, data, w, h, var_x, var_y, var_r=5, var_color='species') {
+      let color = d3.scaleOrdinal(d3.schemeCategory20)
+      let xScale = d3.scaleLinear()
+                .domain(d3.extent(data, function(d) {
+                  return d[var_x]
+                }))
+                .range([0, cellw])
+      let yScale = d3.scaleLinear()
+                    .domain(d3.extent(data, function(d) {
+                      return d[var_y]
+                    }))
+                    .range([cellh, 0])
+      let xAxis = d3.axisBottom(xScale).ticks(10)
+      let yAxis = d3.axisLeft(yScale).ticks(10)
+
+      svg.append('g')
+        .attr('transform', 'translate(0,' + cellh + ')')
+        .attr('class', 'x axis')
+        .call(xAxis)
+  
+      svg.append('g')
+        .attr('transform', 'translate(0,0)')
+        .attr('class', 'y axis')
+        .call(yAxis)
+      
+      svg.append('text')
+         .attr('x', 5)
+         .attr('y', 0)
+         .attr('class', 'label')
+         .text(var_y)
+
+      svg.append('text')
+         .attr('x', cellw)
+         .attr('y', cellh - 5)
+         .attr('class', 'label')
+         .attr('text-anchor', 'end')
+         .text(var_x)
+    
+      svg.selectAll('.circle')
+         .data(data)
+         .enter()
+         .append('circle')
+         .attr('class', 'circle')
+         .attr('r', var_r)
+         .attr('cx', function(d) { return xScale(d[var_x]) })
+         .attr('cy', function(d) { return yScale(d[var_y]) })
+         .style('fill', function(d) { return color(d[var_color]) })
+         .on('mouseover', mouseover)
+         .on('mouseout', mouseout)
+    }
+
+    function mouseover(d) {
+      d3.selectAll('.circle')
+        .filter(function(e) {
+          return e !== d
+        })
+        .style('opacity', 0.09)
+    }
+
+    function mouseout(d) {
+      d3.selectAll('.circle')
+        .filter(function(e) {
+          return e !== d
+        })
+        .style('opacity', 1)
+    }
+  </script>
+</body>
