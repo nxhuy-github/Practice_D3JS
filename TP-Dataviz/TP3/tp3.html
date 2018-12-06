@@ -26,23 +26,26 @@ body {
 
 .chart {
   display: inline-block;
-  height: 240px;
-  width: 240px;
-  margin: 30px;
+  height: 180px;
+  width: 180px;
+  margin: 15px;
+}
+
+#charts {
+	height: 960px;
+  width: 960px;
 }
 </style>
 <body>
-  <script src="http://d3js.org/d3.v4.min.js"></script>
+  <script src="https://d3js.org/d3.v4.min.js"></script>
   <script>
-    let cellw = 240
-    let cellh = 240
+    let cellw = 180
+    let cellh = 180
     let margin = {top: 20, right: 20, bottom: 20, left: 30}
 
     d3.select("body")
       .append("div")
       .attr("id", "charts")
-      .attr("width", "1000px")
-      .attr("height", "1000px")
 
     d3.csv('./iris.csv', function(error, data) {
       if (error) throw error
@@ -72,7 +75,7 @@ body {
       }
     }
 
-    function scatterPlot(svg, data, w, h, var_x, var_y, var_r=5, var_color='species') {
+    function scatterPlot(svg, data, w, h, var_x, var_y, var_r=4, var_color='species') {
       let color = d3.scaleOrdinal(d3.schemeCategory20)
       let xScale = d3.scaleLinear()
                 .domain(d3.extent(data, function(d) {
@@ -84,8 +87,8 @@ body {
                       return d[var_y]
                     }))
                     .range([cellh, 0])
-      let xAxis = d3.axisBottom(xScale).ticks(10)
-      let yAxis = d3.axisLeft(yScale).ticks(10)
+      let xAxis = d3.axisBottom(xScale).ticks(5)
+      let yAxis = d3.axisLeft(yScale).ticks(5)
 
       svg.append('g')
         .attr('transform', 'translate(0,' + cellh + ')')
