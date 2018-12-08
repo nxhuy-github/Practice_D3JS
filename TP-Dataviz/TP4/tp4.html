@@ -1,0 +1,145 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>TP4</title>
+    <style>
+      #viz {
+        height: 500px;
+        width: 960px;
+      }
+      .btn {
+        font-size: 24px;
+      }
+    </style>
+</head>
+<body>
+  <div id="viz"></div>
+  <div id="controls"></div>
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <script>
+    let margin = {top: 20, right: 30, bottom: 30, left: 40}
+    const width = 960 - margin.left - margin.right
+    const height = 500 - margin.top - margin.bottom
+    const names = ["Group", "Stack"]
+    const n = 10, m = 5
+
+    d3.select("#viz")
+      .append("svg")
+      .attr("id", "svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+
+    let data = d3.range(n).map(function() {
+        return d3.range(m).map(Math.random)
+      })
+    let stackLayout = d3.stack().keys(d3.range(m))(data)
+    
+    console.log("Stack Layout: ", stackLayout)
+    console.log("Data: ", data)
+    stackViz()
+    
+    d3.select("#controls")
+      .selectAll("button.btn")
+      .data(names)
+      .enter()
+      .append("button")
+      .attr("class", "btn")
+      .on("click", buttonClick)
+      .html(function(d) { return d })
+
+    function buttonClick(type) {
+      if (type === "Stack") {
+        stackViz()
+      }
+      if (type === "Group") {
+        groupViz()
+      }
+    }
+
+    function stackViz() {
+      let xScale = d3.scaleBand().rangeRound([0, width]).paddingInner(0.05).align(0.1).domain(d3.range(n))
+      let yScale = d3.scaleLinear().domain([0, m]).rangeRound([height, 0]).nice()
+      let color = d3.scaleOrdinal(d3.schemeCategory10)
+
+      if (d3.select("g").selectAll("g.bar").empty() === true) {
+        d3.select("g").selectAll("g.bar")
+          .data(stackLayout)
+          .enter()
+          .append("g")
+          .attr("class", "bar")
+          .each(function(d) {
+            d3.select(this)
+              .selectAll("rect")
+              .data(d)
+              .enter()
+              .append("rect")
+              .transition()
+              .delay(function(p, i) { return i*100 })
+              .duration(500)
+              .attr("x", function(p, i) { return xScale(i) })
+              .attr("y", function(p) { return yScale(p[1]) })
+              .attr("height", function(p) { return yScale(p[0]) - yScale(p[1]) })
+              .attr("width", xScale.bandwidth())
+              .style("fill", color(d.key))
+          })  
+      } else {
+        d3.select("g").selectAll("g.bar")
+        .data(stackLayout)
+        .attr("transform", function(_, i) { return "translate(0, 0)" })
+        .style("fill", function(_, i) { return color(i) })
+        .each(function(d) {
+          d3.select(this)
+            .selectAll("rect")
+            .data(d)
+            .transition()
+            .delay(function(p, i) { return i*100 })
+            .duration(500)
+            .attr("x", function(p, i) { return xScale(i) })
+            .attr("y", function(p) { return yScale(p[1]) })
+            .attr("height", function(p) { return yScale(p[0]) - yScale(p[1]) })
+            .attr("width", xScale.bandwidth())
+        })
+      }
+      
+    }
+
+    function groupViz() {
+      let yScale = d3.scaleLinear().domain([0,m]).range([height, 0]).nice()
+      let x0Scale = d3.scaleBand().domain(d3.range(n)).range([0, width], .2)
+      let x1Scale = d3.scaleBand().domain(d3.range(m)).range([0, x0Scale.bandwidth() - 10])
+      let color = d3.scaleOrdinal(d3.schemeCategory10)
+      let dataGroup = []
+
+      stackLayout.forEach(function(e) {
+        let _t = []
+        e.forEach(function(a, i) {
+          _t.push(a[1])
+        })
+        dataGroup.push(_t)
+      })
+      
+      console.log("Data Group: ", dataGroup)
+      d3.selectAll("g.bar")
+        .data(dataGroup)
+        .attr("transform", function(_, i) { return "translate(" + x1Scale(i) + ",0)" })
+        .style("fill", function(_, i) { return color(i) })
+        .each(function(d) {
+          d3.select(this)
+            .selectAll("rect")
+            .data(d)
+            .transition()
+            .delay(function(p, i) { return i*100 })
+            .duration(500)
+            .attr("width", x1Scale.bandwidth())
+            .attr("height", function(p) { return height - yScale(p) })
+            .attr("x", function(_, i) { return x0Scale(i) })
+            .attr("y", function(p) { return yScale(p) })
+        })
+    }
+  </script>  
+</body>
+</html>
