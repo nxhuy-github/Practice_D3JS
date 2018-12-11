@@ -6,7 +6,7 @@
     <title>TP4</title>
     <style>
       #viz {
-        height: 500px;
+        height: 400px;
         width: 960px;
       }
       .btn {
@@ -21,7 +21,7 @@
   <script>
     let margin = {top: 20, right: 30, bottom: 30, left: 40}
     const width = 960 - margin.left - margin.right
-    const height = 500 - margin.top - margin.bottom
+    const height = 400 - margin.top - margin.bottom
     const names = ["Group", "Stack"]
     const n = 10, m = 5
 
@@ -108,19 +108,19 @@
     }
 
     function groupViz() {
-      let yScale = d3.scaleLinear().domain([0,m]).range([height, 0]).nice()
+      let yScale = d3.scaleLinear().domain([0,1]).range([height, 0]).nice()
       let x0Scale = d3.scaleBand().domain(d3.range(n)).range([0, width], .2)
       let x1Scale = d3.scaleBand().domain(d3.range(m)).range([0, x0Scale.bandwidth() - 10])
       let color = d3.scaleOrdinal(d3.schemeCategory10)
       let dataGroup = []
 
-      stackLayout.forEach(function(e) {
+      for(let i = 0; i < m; i++) {
         let _t = []
-        e.forEach(function(a, i) {
-          _t.push(a[1])
-        })
+        for(let j = 0; j < n; j++) {
+          _t.push(data[j][i])
+        }
         dataGroup.push(_t)
-      })
+      }
       
       console.log("Data Group: ", dataGroup)
       d3.selectAll("g.bar")
