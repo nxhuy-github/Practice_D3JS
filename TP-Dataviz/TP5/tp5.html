@@ -1,0 +1,106 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>TP5</title>
+    <style>
+        .hidden {
+        display: none;
+    }
+    div.tooltip {
+        color: #222;
+        background-color: #fff;
+        padding: .5em;
+        text-shadow: #f5f5f5 0 1px 0;
+        border-radius: 2px;
+        opacity: 0.9;
+        position: absolute;
+    }
+    </style>
+</head>
+<body>
+    <div>
+      <input id="slider" type="range" value="1" min="1" max="52" step="1" />
+      <span id="week">week</span>
+    </div>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script>
+      let width = 700
+      let height = 580
+
+      let svg = d3.select("body")
+                  .append("svg")
+                  .attr("width", width)
+                  .attr("height", height)
+    
+      let tooltip = d3.select("body").append("div")
+                      .attr("class", "hidden tooltip")
+        
+      let projection = d3.geoConicConformal().center([2.454071, 46.279229]).scale(2800)
+      let path = d3.geoPath().projection(projection)
+      let color = d3.scaleQuantize()
+                    .range(['#EDF8E9', '#DFF2D8', '#BFE6B2', '#9FDA8A', '#6FC850'])
+
+      d3.csv('./GrippeFrance2014.csv', function(data) {
+        //console.log(data)
+        let values = []
+        
+        d3.json('./regions.json', function(json) {
+          for(let i = 0; i < data.length; i++) {
+            let dataRegion = data[i].region 
+            let dataValue = parseFloat(data[i].somme2014)
+            
+            let _t = 0
+            for(const [key, value] of Object.entries(data[i])){
+              if(key !== "region" && key!== "somme2014") {
+                _split = key.split("/")
+                if(_split[1] === "11") {
+                  _t = _t + parseFloat(value)
+                }
+              }        
+            }
+            values.push(_t)
+            for(let j = 0; j < json.features.length; j++) {
+              let jsonRegion = json.features[j].properties.nom
+              if(dataRegion === jsonRegion) {
+                json.features[j].properties.value = _t
+                break;
+              }
+            }
+          }
+        console.log("GeoJSON merged: ", json)
+        color.domain([0, d3.max(values, function(d) { return d })])
+
+        svg.selectAll("path")
+           .data(json.features)
+           .enter()
+           .append("path")
+           .attr("d", path)
+           .on("mousemove", function(d) {
+              let mouse = d3.mouse(svg.node()).map(function(d) {
+                return parseInt(d)
+              })
+              tooltip.classed("hidden", false)
+                     .attr("style", "left:" + (mouse[0] + 15) +
+                     "px; top:" + (mouse[1] - 35) + "px")
+                     .html(d.properties.nom + ":" + d.properties.value)
+           })
+           .on("mouseout", function() {
+              tooltip.classed("hidden", true)
+           })
+           .style("stroke", "#fff")
+           .style("stroke-width", "1px")
+           .style("fill", function(d) {
+              let value = d.properties.value
+              if(value) {
+                return color(value)
+              } else{
+                return "#ccc"
+              }
+           })
+        })        
+      })
+    </script>
+</body>
+</html>
