@@ -20,10 +20,6 @@
     </style>
 </head>
 <body>
-    <div>
-      <input id="slider" type="range" value="1" min="1" max="52" step="1" />
-      <span id="week">week</span>
-    </div>
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <script>
       let width = 700
@@ -67,70 +63,39 @@
             for(let j = 0; j < json.features.length; j++) {
               let jsonRegion = json.features[j].properties.nom
               if(dataRegion === jsonRegion) {
-                json.features[j].properties.value = Object.values(data[i])
-                // json.features[j].properties.averageNov = _t
+                json.features[j].properties.value = _t
                 break;
               }
             }
           }
           console.log("GeoJSON merged: ", json)
           color.domain([0, d3.max(values, function(d) { return d })])
-          drawMap(1)
-          d3.select("#slider").on("input", function() {
-            updateViz(this.value)
-          })
-          function updateViz(value) {
-            console.log("update " + value)
-            d3.select("#week").html(weeksArray[value])
-            drawMap(value)
-          }
-          function drawMap(currentWeek) {
-            let carte = svg.selectAll("path").data(json.features)
-            carte.enter()
-                 .append("path")
-                 .attr("class", "enter")
-                 .attr("d", path)
-                 .style("stroke", "#fff")
-                 .style("stroke-width", "1px")
-                 .style("fill", function(d) {
-                   let v = d.properties.value
-                   if(v) {
-                     return color(v[currentWeek])
-                   } else {
-                     return "#ccc"
-                   }
-                 })
-                 .on("mousemove", function(d) { mousemove(d, currentWeek) })
-                 .on("mouseout", mouseout)
-
-            carte.attr("class", "update")
-                 .style("fill", function(d) {
-                   let v = d.properties.value
-                   if(v) {
-                     return color(v[currentWeek])
-                   } else {
-                     return "#ccc"
-                   }
-                 })
-                 .on("mousemove", function(d) { mousemove(d, currentWeek) })
-                 .on("mouseout", mouseout)
-          }
-          function mousemove(d, currentWeek) {
-            let mouse = d3.mouse(svg.node()).map(function(x) {
-              return parseInt(x)
-            })
-            tooltip.classed("hidden", false)
-              .attr("style", "left:" + (mouse[0] + 15) +
-              "px; top:" + (mouse[1] - 35) + "px")
-            if(d.properties.value) {
-              tooltip.html(d.properties.nom + ":" + d.properties.value[currentWeek])
-            } else {
-              tooltip.html(d.properties.nom)
-            }
-          }
-          function mouseout() {
-            tooltip.classed("hidden", true)
-          }
+          
+          svg.selectAll("path")
+             .data(json.features)
+             .enter()
+             .append("path")
+             .attr("d", path)
+             .style("fill", function(d) {
+                let v = d.properties.value
+                if(v) {
+                  return color(v)
+                } else {
+                  return "#ccc"
+                }
+             })
+             .on("mousemove", function(d) {
+                let mouse = d3.mouse(svg.node()).map(function(x) {
+                  return parseInt(x)
+                })
+                tooltip.classed("hidden", false)
+                  .attr("style", "left:" + (mouse[0] + 15) +
+                  "px; top:" + (mouse[1] - 35) + "px")
+                  .html(d.properties.nom + ":" + d.properties.value)
+             })
+             .on("mouseover", function(d) {
+                tooltip.classed("hidden", true)
+             })
         })
       })
     </script>
